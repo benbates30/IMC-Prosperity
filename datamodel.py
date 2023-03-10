@@ -31,7 +31,7 @@ class Order:
     
 
 class OrderDepth:
-    def __init__(self, buy_orders: Dict[int, int], sell_orders: Dict[int, int]):
+    def __init__(self):
         self.buy_orders: Dict[int, int] = {}
         self.sell_orders: Dict[int, int] = {}
 
@@ -39,8 +39,8 @@ class OrderDepth:
 class Trade:
     def __init__(self, symbol: Symbol, price: int, quantity: int, buyer: UserId = None, seller: UserId = None, timestamp: int = 0) -> None:
         self.symbol = symbol
-        self.price: int = price
-        self.quantity: int = quantity
+        self.price = price
+        self.quantity = quantity
         self.buyer = buyer
         self.seller = seller
         self.timestamp = timestamp
