@@ -1,6 +1,5 @@
 import numpy as np
 
-
 ''' An LSTM with a FC layer on top '''
 class LSTM:
     def sigmoid(self, x):
