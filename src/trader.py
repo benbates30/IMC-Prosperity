@@ -1,4 +1,7 @@
 from dataset import Dataset
+from datamodel import OrderDepth, TradingState, Order
+from typing import Dict, List
+
 
 class Rule:
     def __init__(
@@ -53,14 +56,15 @@ class Trader:
         rules
     ):
         self.states = []
-        self.rules = rules
+        self.rules = {} # hardcode rule for each product
 
-    def run(self, state):
+    def run(self, state: TradingState):
         self.states.append(state)
 
         result = {}
-        for rule in self.rules:
-            product, orders = rule(self.states)
+        for product in state.order_depths.keys():
+            rule = self.rules[product]
+            orders = rule(self.states)
             result[product] = orders
 
         return result
