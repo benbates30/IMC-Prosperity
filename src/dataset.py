@@ -3,12 +3,12 @@ import pandas as pd
 from typing import Dict, List
 from datamodel import TradingState
 
-def criterion(data, security, window, profit, shortsell=False):
+def criterion(data, product, window, profit, shortsell=False):
     """
-    Creates a ground truth value for a single type of security 
+    Creates a ground truth value for a single type of product 
     over a windowed period if it can be bought/sold for profit 
 
-    return 1 if the security can be bought/sold now to make atleast 
+    return 1 if the product can be bought/sold now to make atleast 
     profit amound within the next window number of trading states
 
     return 0 otherwise
@@ -40,7 +40,7 @@ class Dataset:
     def compute_gt(
         self, 
         data : List[TradingState],
-        security, 
+        product, 
         profit,
         window,
         shortsell=False
@@ -51,7 +51,7 @@ class Dataset:
             ret.append(
                 criterion(
                     wdata,
-                    security,
+                    product,
                     window,
                     profit,
                     shortsell=shortsell
