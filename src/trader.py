@@ -1,7 +1,5 @@
+import numpy as np
 from dataset import Dataset
-from datamodel import OrderDepth, TradingState, Order
-from typing import Dict, List
-
 
 class Rule:
     def __init__(
@@ -40,15 +38,19 @@ class Rule:
         )
 
         self.model.train(xs, ys)
+        
+        print("Accuracy...")
+        preds = self.model.predict(xs)
+        v = np.logical_and(preds, ys)
+        print(np.sum(v)/len(ys))
+
         return self.model.get_params()
-
-
-
+    
     def __call__(self, states):
         input = self.dataset.compute_single(states)
         output = self.model.predict(input)
 
-        return self.product, self.getOrdersFn(output)
+        return self.product, output
 
 class Trader:
     def __init__(
@@ -56,15 +58,14 @@ class Trader:
         rules
     ):
         self.states = []
-        self.rules = {} # hardcode rule for each product
+        self.rules = rules
 
-    def run(self, state: TradingState):
+    def run(self, state):
         self.states.append(state)
 
         result = {}
-        for product in state.order_depths.keys():
-            rule = self.rules[product]
-            orders = rule(self.states)
+        for rule in self.rules:
+            product, orders = rule(self.states)
             result[product] = orders
 
         return result

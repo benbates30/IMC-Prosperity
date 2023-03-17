@@ -76,7 +76,7 @@ class LogisticRegression:
     
         return self._sigmoid(np.dot(X, self._weights))
     
-    def predict(self, X, threshold):
+    def predict(self, X, threshold=0.5):
         if type(X) == pd.DataFrame:
             X = np.asarray(X)
 
