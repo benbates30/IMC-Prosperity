@@ -13,6 +13,8 @@ def criterion(data, product, window, profit, shortsell=False):
 
     return 0 otherwise
     """
+    if len(data) < window:
+        return 0
     wdata = data[:window]
 
 class Dataset:

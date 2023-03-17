@@ -8,15 +8,38 @@ class Rule:
         indicators,
         config,
         product,
-        getOrdersFn
+        getOrdersFn,
+        profit,
+        fwindow,
+        shortsell = False
     ):
         self.model = model
-        self.model.load_params(hardcode)
+
+        if hardcode:
+            self.model.load_params(hardcode)
 
         self.dataset = Dataset(indicators, **config)
 
         self.product = product
         self.getOrdersFn = getOrdersFn
+        self.profit = profit
+        self.fwindow = fwindow
+        self.shortsell = shortsell
+
+    def train(self, states):
+        xs = self.dataset.compute_many(states)
+        ys = self.dataset.compute_gt(
+            states,
+            self.product,
+            self.profit,
+            self.fwindow,
+            shortsell=self.shortsell
+        )
+
+        self.model.train(xs, ys)
+        return self.model.get_params()
+
+
 
     def __call__(self, states):
         input = self.dataset.compute_single(states)

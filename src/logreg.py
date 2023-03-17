@@ -31,6 +31,12 @@ class LogisticRegression:
 
         return (-y * np.log(h) - (1 - y) * np.log(1 - h)).mean()
 
+    def get_params(self):
+        return self._weights
+    
+    def load_params(self, params):
+        self._weights = params
+
     def train(self, X, y):
         '''
         Function for training the algorithm.
@@ -73,5 +79,5 @@ class LogisticRegression:
     def predict(self, X, threshold):
         if type(X) == pd.DataFrame:
             X = np.asarray(X)
-            
+
         return self.predict_prob(X) >= threshold
