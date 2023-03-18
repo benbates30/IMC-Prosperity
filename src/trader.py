@@ -18,7 +18,6 @@ Prediction Workflow:
     purchasing rules
 '''
 
-
 import numpy as np
 
 def avg_price_indicator(states, window, products):
