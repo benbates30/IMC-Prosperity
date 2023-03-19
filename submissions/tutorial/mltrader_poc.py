@@ -448,7 +448,7 @@ class LogisticRegression:
         if type(X) == pd.DataFrame:
             X = np.asarray(X)
         if self.fit_intercept:
-            X = self._add_intercept(X[None, :])
+            X = self._add_intercept(X)
     
         return self._sigmoid(np.dot(X, self._weights))
     
@@ -616,6 +616,7 @@ class Trader:
         # Iterate over all the keys (the available products) contained in the order depths
         for product in self.products:
             x = np.array(compute_single(self.states, self.inds, self.windows, product))
+            x = x[None, :]
             print(f"x for {product} made")
 
             logreg_out = [clf.predict(x) for clf in self.clfs[product]['logregs']]
