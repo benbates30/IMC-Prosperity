@@ -31,9 +31,10 @@ class Order:
     
 
 class OrderDepth:
-    def __init__(self, buy_orders: Dict[int, int], sell_orders: Dict[int, int]):
-        self.buy_orders: Dict[int, int] = {}
-        self.sell_orders: Dict[int, int] = {}
+    def __init__(self, buy_orders: Dict[int, int], sell_orders: Dict[int, int], mid_price):
+        self.buy_orders: Dict[int, int] = buy_orders
+        self.sell_orders: Dict[int, int] = sell_orders
+        self.mid_price: float = mid_price
 
 
 class Trade:
