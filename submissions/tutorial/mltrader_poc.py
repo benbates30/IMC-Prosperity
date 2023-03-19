@@ -447,9 +447,8 @@ class LogisticRegression:
     def predict_prob(self, X):
         if type(X) == pd.DataFrame:
             X = np.asarray(X)
-
         if self.fit_intercept:
-            X = self._add_intercept(X)
+            X = self._add_intercept(X[None, :])
     
         return self._sigmoid(np.dot(X, self._weights))
     
