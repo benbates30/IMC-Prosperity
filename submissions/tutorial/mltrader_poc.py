@@ -637,37 +637,37 @@ class Trader:
             orders: List[Order] = []
             order_depth: OrderDepth = state.order_depths[product]
             if vote_gt == 0: # Must Buy
-                if len(order_depth.sell_orders.keys() > 0):
+                if len(order_depth.buy_orders) != 0:
                     best_ask = min(order_depth.sell_orders.keys())
                     best_ask_volume = order_depth.sell_orders[best_ask]
                     orders.append(Order(product, best_ask, 3))
                     # purchasing policy
             elif vote_gt == 1: # Strong Buy
-                if len(order_depth.sell_orders.keys() > 0):
+                if len(order_depth.buy_orders) != 0:
                     best_ask = min(order_depth.sell_orders.keys())
                     best_ask_volume = order_depth.sell_orders[best_ask]
                     orders.append(Order(product, best_ask, 2))
                 # purchasing policy
             elif vote_gt == 2: # Soft Buy
-                if len(order_depth.sell_orders.keys() > 0):
+                if len(order_depth.buy_orders) != 0:
                     best_ask = min(order_depth.sell_orders.keys())
                     best_ask_volume = order_depth.sell_orders[best_ask]
                     orders.append(Order(product, best_ask, 1))
                 # purchasing policy
             elif vote_gt == 3: # Must Sell/Short
-                if len(order_depth.sell_orders.keys() > 0):
+                if len(order_depth.sell_orders) > 0:
                     best_bid = max(order_depth.buy_orders.keys())
                     best_ask_volume = order_depth.buy_orders[best_bid]
                     orders.append(Order(product, best_bid, -3))
                 # purchasing policy
             elif vote_gt == 4: # Strong Sell/Short
-                 if len(order_depth.sell_orders.keys() > 0):
+                 if len(order_depth.sell_orders) > 0:
                     best_bid = max(order_depth.buy_orders.keys())
                     best_ask_volume = order_depth.buy_orders[best_bid]
                     orders.append(Order(product, best_bid, -2))
                 # purchasing policy
             elif vote_gt == 5: # Soft Sell/Short
-                 if len(order_depth.sell_orders.keys() > 0):
+                 if len(order_depth.sell_orders) > 0:
                     best_bid = max(order_depth.buy_orders.keys())
                     best_ask_volume = order_depth.buy_orders[best_bid]
                     orders.append(Order(product, best_bid, -1))
@@ -676,7 +676,7 @@ class Trader:
                 pass # purchasing policy
 
 
-            
+
             result[product] = orders
         
         
