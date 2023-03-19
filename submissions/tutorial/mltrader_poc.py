@@ -516,7 +516,7 @@ def avg_mid_price(states, windows, product):
         if len(order_book.buy_orders) > 0:
             best_bid = max(order_book.buy_orders.keys())
         if len(order_book.sell_orders) > 0:
-            best_ask = max(order_book.sell_orders.keys())
+            best_ask = min(order_book.sell_orders.keys())
         
         if best_bid == 0:
             mid_price = best_ask
@@ -631,68 +631,55 @@ class Trader:
             # Look at trader_test for definitions
             # Hold is everything else
 
+            
             # TODO: Make purchasing decision based on vote_gt
+
+            orders: List[Order] = []
+            order_depth: OrderDepth = state.order_depths[product]
             if vote_gt == 0: # Must Buy
-                pass # purchasing policy
+                if len(order_depth.sell_orders.keys() > 0):
+                    best_ask = min(order_depth.sell_orders.keys())
+                    best_ask_volume = order_depth.sell_orders[best_ask]
+                    orders.append(Order(product, best_ask, 3))
+                    # purchasing policy
             elif vote_gt == 1: # Strong Buy
-                pass # purchasing policy
+                if len(order_depth.sell_orders.keys() > 0):
+                    best_ask = min(order_depth.sell_orders.keys())
+                    best_ask_volume = order_depth.sell_orders[best_ask]
+                    orders.append(Order(product, best_ask, 2))
+                # purchasing policy
             elif vote_gt == 2: # Soft Buy
-                pass # purchasing policy
+                if len(order_depth.sell_orders.keys() > 0):
+                    best_ask = min(order_depth.sell_orders.keys())
+                    best_ask_volume = order_depth.sell_orders[best_ask]
+                    orders.append(Order(product, best_ask, 1))
+                # purchasing policy
             elif vote_gt == 3: # Must Sell/Short
-                pass # purchasing policy
+                if len(order_depth.sell_orders.keys() > 0):
+                    best_bid = max(order_depth.buy_orders.keys())
+                    best_ask_volume = order_depth.buy_orders[best_bid]
+                    orders.append(Order(product, best_bid, -3))
+                # purchasing policy
             elif vote_gt == 4: # Strong Sell/Short
-                pass # purchasing policy
+                 if len(order_depth.sell_orders.keys() > 0):
+                    best_bid = max(order_depth.buy_orders.keys())
+                    best_ask_volume = order_depth.buy_orders[best_bid]
+                    orders.append(Order(product, best_bid, -2))
+                # purchasing policy
             elif vote_gt == 5: # Soft Sell/Short
-                pass # purchasing policy
+                 if len(order_depth.sell_orders.keys() > 0):
+                    best_bid = max(order_depth.buy_orders.keys())
+                    best_ask_volume = order_depth.buy_orders[best_bid]
+                    orders.append(Order(product, best_bid, -1))
+                # purchasing policy
             elif vote_gt == 6: # Neutral
                 pass # purchasing policy
 
-            # Check if the current product is the 'PEARLS' product, only then run the order logic
-            if product == 'PEARLS':
 
-                # Retrieve the Order Depth containing all the market BUY and SELL orders for PEARLS
-                order_depth: OrderDepth = state.order_depths[product]
+            
+            result[product] = orders
+        
+        
 
-                # Initialize the list of Orders to be sent as an empty list
-                orders: list[Order] = []
 
-                # Define a fair value for the PEARLS.
-                # Note that this value of 1 is just a dummy value, you should likely change it!
-                acceptable_price = 1
-
-                # If statement checks if there are any SELL orders in the PEARLS market
-                if len(order_depth.sell_orders) > 0:
-
-                    # Sort all the available sell orders by their price,
-                    # and select only the sell order with the lowest price
-                    best_ask = min(order_depth.sell_orders.keys())
-                    best_ask_volume = order_depth.sell_orders[best_ask]
-
-                    # Check if the lowest ask (sell order) is lower than the above defined fair value
-                    if best_ask < acceptable_price:
-
-                        # In case the lowest ask is lower than our fair value,
-                        # This presents an opportunity for us to buy cheaply
-                        # The code below therefore sends a BUY order at the price level of the ask,
-                        # with the same quantity
-                        # We expect this order to trade with the sell order
-                        orders.append(Order(product, best_ask, -best_ask_volume))
-
-                # The below code block is similar to the one above,
-                # the difference is that it finds the highest bid (buy order)
-                # If the price of the order is higher than the fair value
-                # This is an opportunity to sell at a premium
-                if len(order_depth.buy_orders) != 0:
-                    best_bid = max(order_depth.buy_orders.keys())
-                    best_bid_volume = order_depth.buy_orders[best_bid]
-                    if best_bid > acceptable_price:
-                        print("SELL", str(best_bid_volume) + "x", best_bid)
-                        orders.append(Order(product, best_bid, -best_bid_volume))
-
-                # Add all the above orders to the result dict
-                result[product] = orders
-
-                # Return the dict of orders
-                # These possibly contain buy or sell orders for PEARLS
-                # Depending on the logic above
         return result
