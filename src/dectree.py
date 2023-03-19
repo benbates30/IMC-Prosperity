@@ -1,6 +1,52 @@
 import numpy as np
 import pandas as pd
 
+def serialize_node(model):
+    serialized_model = {
+        'column':model.column,
+        'threshold':model.threshold,
+        'probas':model.probas,
+        'is_terminal':model.is_terminal,
+        'depth':model.depth
+    }
+
+    if not model.is_terminal:
+        serialized_model['left'] = serialize_node(model.left)
+        serialized_model['right'] = serialize_node(model.right)
+
+    return serialized_model
+
+def deserialize_node(model_dict):
+    deserialized_node = Node()
+    deserialized_node.column = model_dict['column']
+    deserialized_node.threshold = model_dict['threshold']
+    deserialized_node.probas = model_dict['probas']
+    deserialized_node.is_terminal = model_dict['is_terminal']
+    deserialized_node.depth = model_dict['depth']
+    if not deserialized_node.is_terminal:
+        deserialized_node.left = deserialize_node(model_dict['left'])
+        deserialized_node.right = deserialize_node(model_dict['right'])
+    return deserialized_node
+
+def serialize_decision_tree(model):
+    serialized_model = {
+        'max_depth':model.max_depth,
+        'min_samples_split':model.min_samples_split,
+        'min_samples_leaf':model.min_samples_leaf,
+        'classes':model.classes,
+        'Tree': serialize_node(model.Tree)
+    }
+    return serialized_model
+
+def deserialize_decision_tree(model_dict):
+    deserialized_decision_tree = DecisionTreeClassifier()
+    deserialized_decision_tree.max_depth = model_dict['max_depth']
+    deserialized_decision_tree.min_samples_split = model_dict['min_samples_split']
+    deserialized_decision_tree.min_samples_leaf = model_dict['min_samples_leaf']
+    deserialized_decision_tree.classes = model_dict['classes']
+    deserialized_decision_tree.Tree = deserialize_node(model_dict['Tree'])
+    return deserialized_decision_tree
+
 class Node:
     def __init__(self):
         
@@ -161,7 +207,6 @@ class DecisionTreeClassifier:
         '''
         Standard fit function to run all the model training
         '''
-        
         if type(X) == pd.DataFrame:
             X = np.asarray(X)
         
@@ -177,8 +222,6 @@ class DecisionTreeClassifier:
         '''
         Passes one object through decision tree and return the probability of it to belong to each class
         '''
-       
-    
         # if we have reached the terminal node of the tree
         if node.is_terminal:
             return node.probas
@@ -190,8 +233,6 @@ class DecisionTreeClassifier:
             
         return probas
         
-    
-    
     def predict(self, X):
         '''
         Returns the labels for each X
@@ -206,3 +247,73 @@ class DecisionTreeClassifier:
             predictions.append(pred)
         
         return np.asarray(predictions)
+    
+    def eval(self, X, y):
+        """"Evaluate accuracy on dataset."""
+        p = self.predict(X)
+        return np.sum(p == y) / X.shape[0]
+    
+class Forest:
+    def __init__(self, max_depth=5, no_trees=7,
+                 min_samples_split=2, min_samples_leaf=1, feature_search=None,
+                 bootstrap=True):
+        """Random Forest implementation using numpy.
+        Args:
+            max_depth(int): Max depth of trees.
+            no_trees(int): Number of trees.
+            min_samples_split(int): Number of samples in a node to allow
+            split search.
+            min_samples_leaf(int): Number of samples to be deemed a leaf node.
+            feature_search(int): Number of features to search when splitting.
+            bootstrap(boolean): Resample dataset with replacement
+        """
+        self._trees = []
+        self._max_depth = max_depth
+        self._no_trees = no_trees
+        self._min_samples_split = min_samples_split
+        self._min_samples_leaf = min_samples_leaf
+        self._feature_search = feature_search
+        self._bootstrap = bootstrap
+
+    def train(self, x, y):
+        """Training procedure.
+        Args:
+            x(ndarray): Inputs.
+            y(ndarray): Labels.
+        Returns:
+            None
+        """
+        print('Training Forest...\n')
+        for i in range(self._no_trees):
+            print('\nTraining Decision Tree no {}...\n'.format(i + 1))
+            tree = DecisionTreeClassifier(max_depth=self._max_depth,
+                        min_samples_split=self._min_samples_split,
+                        min_samples_leaf=self._min_samples_leaf)
+            tree.fit(x, y)
+            self._trees.append(tree)
+
+    def eval(self, x, y):
+        """"Evaluate accuracy on dataset."""
+        p = self.predict(x)
+        return np.sum(p == y) / x.shape[0]
+
+    def predict(self, x):
+        """Return predicted labels for given inputs."""
+        return np.array([self._aggregate(x[i]) for i in range(x.shape[0])])
+
+    def _aggregate(self, x):
+        """Predict class by pooling predictions from all trees.
+        Args:
+            x(ndarray): A single example.
+        Returns:
+            (int): Predicted class index.
+        """
+        temp = [t.predict(x) for t in self._trees]
+        _classes, counts = np.unique(np.array(temp), return_counts=True)
+
+        # Return class with max count
+        return _classes[np.argmax(counts)]
+
+    def node_count(self):
+        """Return number of nodes in forest."""
+        return np.sum([t.node_count() for t in self._trees])

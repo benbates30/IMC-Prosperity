@@ -136,8 +136,8 @@ class LSTM:
 
     def train(self, x, y, iterations, lr):
         #BETTER WAY
-        for a in range(iterations):
-            print ('Iteration {}'.format(a))
+        from tqdm import tqdm
+        for a in tqdm(range(iterations)):
             for i in range(len(x)):
                 seq_length = len(x[i])
                 for j in range(seq_length):
@@ -160,3 +160,8 @@ class LSTM:
             outputs.append(output)
         self.reset()
         return outputs
+    
+    def eval(self, X, y):
+        """"Evaluate accuracy on dataset."""
+        p = self.run(X)
+        return np.sum(p == y) / X.shape[0]

@@ -96,7 +96,7 @@ def split_search_feature(x, y, feature_idx, min_samples_leaf):
             splits.append(s)
             split_values.append(split_value)
 
-    if len(gini_scores) is 0:
+    if len(gini_scores) == 0:
         # Impossible to split
         # This will occur when samples are identical in a given node
         return np.NaN, np.NaN, None
@@ -383,3 +383,80 @@ class Forest:
     def node_count(self):
         """Return number of nodes in forest."""
         return np.sum([t.node_count() for t in self._trees])
+
+def serialize_node(model):
+    serialized_model = {
+        'feature_idx':model._feature_idx,
+        'split_value':model._split_value,
+        'leaf':model._leaf,
+        'label':model._label,
+        'depth':model._depth
+    }
+
+    if not model._leaf:
+        serialized_model['left_child'] = serialize_node(model._left_child)
+        serialized_model['right_child'] = serialize_node(model._right_child)
+
+    return serialized_model
+
+def deserialize_node(model_dict):
+    deserialized_node = Node()
+    deserialized_node._feature_idx = model_dict['feature_idx']
+    deserialized_node._split_value = model_dict['split_value']
+    deserialized_node._leaf = model_dict['leaf']
+    deserialized_node._label = model_dict['label']
+    deserialized_node._depth = model_dict['depth']
+    if not deserialized_node._leaf:
+        deserialized_node._left_child = deserialize_node(model_dict['left_child'])
+        deserialized_node._left_child = deserialize_node(model_dict['left_child'])
+    return deserialized_node
+
+def serialize_decision_tree(model):
+    serialized_model = {
+        'max_depth':model._max_depth,
+        'min_samples_split':model._min_samples_split,
+        'min_samples_leaf':model._min_samples_leaf,
+        'bootstrap':model._bootstrap,
+        'root': serialize_node(model._root)
+    }
+    return serialized_model
+
+def deserialize_decision_tree(model_dict):
+    deserialized_decision_tree = Tree()
+    deserialized_decision_tree._max_depth = model_dict['max_depth']
+    deserialized_decision_tree._min_samples_split = model_dict['min_samples_split']
+    deserialized_decision_tree._min_samples_leaf = model_dict['min_samples_leaf']
+    deserialized_decision_tree._bootstrap = model_dict['bootstrap']
+    deserialized_decision_tree._root = deserialize_node(model_dict['root'])
+    return deserialized_decision_tree
+
+def serialize_rf(model):
+    # self._trees = []
+    # self._max_depth = max_depth
+    # self._no_trees = no_trees
+    # self._min_samples_split = min_samples_split
+    # self._min_samples_leaf = min_samples_leaf
+    # self._feature_search = feature_search
+    # self._bootstrap = bootstrap
+    serialized_model = {
+        'max_depth':model._max_depth,
+        'no_trees':model._no_trees,
+        'min_samples_split':model._min_samples_split,
+        'min_samples_leaf':model._min_samples_leaf,
+        'feature_search':model._feature_search,
+        'bootstrap':model._bootstrap,
+        'trees':[serialize_decision_tree(dectree) for dectree in model._trees]
+    }
+
+    return serialized_model
+
+def deserialize_rf(model_dict):
+    deserialized_rf = Forest()
+    deserialized_rf._max_depth = model_dict['max_depth']
+    deserialized_rf._no_trees = model_dict['no_trees']
+    deserialized_rf._min_samples_split = model_dict['min_samples_split']
+    deserialized_rf._min_samples_leaf = model_dict['min_samples_leaf']
+    deserialized_rf._feature_search = model_dict['feature_search']
+    deserialized_rf._bootstrap = model_dict['bootstrap']
+    deserialized_rf._trees = [deserialize_decision_tree(tree) for tree in model_dict['trees']]
+    return deserialized_rf

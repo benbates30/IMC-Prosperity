@@ -1,6 +1,30 @@
 import numpy as np
 import pandas as pd
 
+def serialize_logreg(model):
+    # self.learning_rate = learning_rate  # learning_rate of the algorithm
+    # self.num_iter = num_iter  #  number of iterations of the gradient descent
+    # self.fit_intercept = fit_intercept  # boolean indicating whether we`re adding base X0 feature vector or not
+    # self.verbose = verbose 
+    # self._weights
+    serialized_model = {
+        'learning_rate':model.learning_rate,
+        'num_iter':model.num_iter,
+        'fit_intercept':model.fit_intercept,
+        'verbose':model.verbose,
+        'weights':model._weights.tolist()
+    }
+    return serialized_model
+
+def deserialize_logreg(model_dict):
+    deserialized_model = LogisticRegression()
+    deserialized_model.learning_rate = model_dict['learning_rate']
+    deserialized_model.num_iter = model_dict['num_iter']
+    deserialized_model.fit_intercept = model_dict['fit_intercept']
+    deserialized_model.verbose = model_dict['verbose']
+    deserialized_model._weights = np.array(model_dict['weights'])
+    return deserialized_model
+
 class LogisticRegression:
     def __init__(self, learning_rate=0.01, num_iter=100, fit_intercept=True, verbose=False):
         self.learning_rate = learning_rate  # learning_rate of the algorithm
@@ -81,3 +105,8 @@ class LogisticRegression:
             X = np.asarray(X)
 
         return self.predict_prob(X) >= threshold
+    
+    def eval(self, X, y):
+        """"Evaluate accuracy on dataset."""
+        p = self.predict(X)
+        return np.sum(p == y) / X.shape[0]
