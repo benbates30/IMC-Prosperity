@@ -31,7 +31,8 @@ class LogisticRegression:
         self.learning_rate = learning_rate  # learning_rate of the algorithm
         self.num_iter = num_iter  #  number of iterations of the gradient descent
         self.fit_intercept = fit_intercept  # boolean indicating whether we`re adding base X0 feature vector or not
-        self.verbose = verbose  
+        self.verbose = verbose 
+        self.firsttime = True 
 
     def _add_intercept(self, X):
         intercept = np.ones((X.shape[0], 1))  #  creating X0 features vector(M x 1)
@@ -79,8 +80,10 @@ class LogisticRegression:
         if self.fit_intercept:
             X = self._add_intercept(X)  # X will get a result with "zero" feature
 
-        self._weights = np.zeros(X.shape[1])  #  inicializing our weights vector filled with zeros
-        
+        if self.firsttime:
+            self._weights = np.zeros(X.shape[1])  #  inicializing our weights vector filled with zeros
+            self.firsttime = False
+
         for i in range(self.num_iter):  # implementing Gradient Descent algorithm
             z = np.dot(X, self._weights)  #  calculate the product of the weights and predictor matrix
             h = self._sigmoid(z)
