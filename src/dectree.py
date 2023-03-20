@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from sklearn.metrics import confusion_matrix
 
 def serialize_node(model):
     serialized_model = {
@@ -46,6 +47,37 @@ def deserialize_decision_tree(model_dict):
     deserialized_decision_tree.classes = model_dict['classes']
     deserialized_decision_tree.Tree = deserialize_node(model_dict['Tree'])
     return deserialized_decision_tree
+
+def serialize_rf(model):
+    # self._trees = []
+    # self._max_depth = max_depth
+    # self._no_trees = no_trees
+    # self._min_samples_split = min_samples_split
+    # self._min_samples_leaf = min_samples_leaf
+    # self._feature_search = feature_search
+    # self._bootstrap = bootstrap
+    serialized_model = {
+        'max_depth':model._max_depth,
+        'no_trees':model._no_trees,
+        'min_samples_split':model._min_samples_split,
+        'min_samples_leaf':model._min_samples_leaf,
+        'feature_search':model._feature_search,
+        'bootstrap':model._bootstrap,
+        'trees':[serialize_decision_tree(dectree) for dectree in model._trees]
+    }
+
+    return serialized_model
+
+def deserialize_rf(model_dict):
+    deserialized_rf = Forest()
+    deserialized_rf._max_depth = model_dict['max_depth']
+    deserialized_rf._no_trees = model_dict['no_trees']
+    deserialized_rf._min_samples_split = model_dict['min_samples_split']
+    deserialized_rf._min_samples_leaf = model_dict['min_samples_leaf']
+    deserialized_rf._feature_search = model_dict['feature_search']
+    deserialized_rf._bootstrap = model_dict['bootstrap']
+    deserialized_rf._trees = [deserialize_decision_tree(tree) for tree in model_dict['trees']]
+    return deserialized_rf
 
 class Node:
     def __init__(self):
@@ -251,6 +283,7 @@ class DecisionTreeClassifier:
     def eval(self, X, y):
         """"Evaluate accuracy on dataset."""
         p = self.predict(X)
+        print(confusion_matrix(y, p))
         return np.sum(p == y) / X.shape[0]
     
 class Forest:
@@ -289,12 +322,17 @@ class Forest:
             tree = DecisionTreeClassifier(max_depth=self._max_depth,
                         min_samples_split=self._min_samples_split,
                         min_samples_leaf=self._min_samples_leaf)
+            if self._bootstrap:
+                # Resample with replacement
+                bootstrap_indices = np.random.randint(0, x.shape[0], x.shape[0])
+                x, y = x[bootstrap_indices], y[bootstrap_indices]
             tree.fit(x, y)
             self._trees.append(tree)
 
     def eval(self, x, y):
         """"Evaluate accuracy on dataset."""
         p = self.predict(x)
+        print(confusion_matrix(y, p))
         return np.sum(p == y) / x.shape[0]
 
     def predict(self, x):

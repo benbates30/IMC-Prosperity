@@ -23,7 +23,7 @@ class KNN:
         k_neighbors = sorted(distances, key=distances.get)[:self.K]
         
         # Initializing labels counters
-        ycounter = np.zeros(len(y[0]))
+        ycounter = np.zeros(len(self.y[0]))
         for index in k_neighbors:
             ycounter += self.y[index]
         return np.exp(ycounter)/sum(np.exp(ycounter))

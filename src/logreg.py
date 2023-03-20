@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from sklearn.metrics import confusion_matrix
 
 def serialize_logreg(model):
     # self.learning_rate = learning_rate  # learning_rate of the algorithm
@@ -109,4 +110,5 @@ class LogisticRegression:
     def eval(self, X, y):
         """"Evaluate accuracy on dataset."""
         p = self.predict(X)
+        print(confusion_matrix(y, p))
         return np.sum(p == y) / X.shape[0]
