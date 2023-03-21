@@ -235,7 +235,7 @@ class DecisionTreeClassifier:
         self.buildDT(x_right, y_right, node.right)
         self.buildDT(x_left, y_left, node.left)
     
-    def fit(self, X, y):
+    def train(self, X, y):
         '''
         Standard fit function to run all the model training
         '''
@@ -324,9 +324,9 @@ class Forest:
                         min_samples_leaf=self._min_samples_leaf)
             if self._bootstrap:
                 # Resample with replacement
-                bootstrap_indices = np.random.randint(0, x.shape[0], x.shape[0])
+                bootstrap_indices = np.random.randint(0, x.shape[0]/3, x.shape[0])
                 x, y = x[bootstrap_indices], y[bootstrap_indices]
-            tree.fit(x, y)
+            tree.train(x, y)
             self._trees.append(tree)
 
     def eval(self, x, y):
@@ -337,7 +337,7 @@ class Forest:
 
     def predict(self, x):
         """Return predicted labels for given inputs."""
-        return np.array([self._aggregate(x[i]) for i in range(x.shape[0])])
+        return np.array([self._aggregate([x[i]]) for i in range(x.shape[0])])
 
     def _aggregate(self, x):
         """Predict class by pooling predictions from all trees.
