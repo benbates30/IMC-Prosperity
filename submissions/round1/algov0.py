@@ -1,9 +1,10 @@
+import json
 import numpy as np
 import pandas as pd
 from numpy import array
 import statistics as s
-from typing import Dict, List
-from datamodel import OrderDepth, TradingState, Order
+from typing import Dict, List, Any
+from datamodel import OrderDepth, TradingState, Order, ProsperityEncoder, Symbol
 
 
 
@@ -472,6 +473,22 @@ class LogisticRegression:
         return np.sum(p == y) / X.shape[0]
 
 
+class Logger:
+    def __init__(self) -> None:
+        self.logs = ""
+
+    def print(self, *objects: Any, sep: str = " ", end: str = "\n") -> None:
+        self.logs += sep.join(map(str, objects)) + end
+
+    def flush(self, state: TradingState, orders: dict[Symbol, list[Order]]) -> None:
+        print(json.dumps({
+            "state": state,
+            "orders": orders,
+            "logs": self.logs,
+        }, cls=ProsperityEncoder, separators=(",", ":"), sort_keys=True))
+
+        self.logs = ""
+
 
 
 class Indicator:
@@ -581,6 +598,7 @@ class Indicator:
 
 class Trader:
     def __init__(self):
+        self.logger = Logger()
         self.states = []
         self.products = ["BANANAS", "PEARLS"]
         # self.inds = [wavg_bid_price, wavg_ask_price, avg_mid_price, volume_diff, best_prices]
@@ -700,6 +718,6 @@ class Trader:
             result[product] = orders
         
         
-
+        self.logger.flush(state, result)
 
         return result
